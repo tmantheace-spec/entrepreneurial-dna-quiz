@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Entrepreneurial DNA Quiz</title>
+<meta name="description" content="A 2–3 minute quiz that reveals what kind of entrepreneurial thinker you are.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Hidden form so Netlify can detect it at deploy time and collect responses. -->
+<form name="quiz-results" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="bot-field">
+  <input name="archetype">
+  <input name="answers">
+  <input name="score-strategic-mind">
+  <input name="score-innovation-architect">
+  <input name="score-impact-catalyst">
+  <input name="score-visionary-leader">
+</form>
+
+<main id="app">
+
+  <!-- Intro -->
+  <section id="intro" class="screen">
+    <p class="eyebrow">2–3 minutes · 10 questions</p>
+    <h1>The Entrepreneurial DNA Quiz</h1>
+    <p class="lede">Ten everyday situations. No right answers. Pick whatever sounds most like you and find out what kind of entrepreneurial thinker you are.</p>
+    <button id="start" class="btn primary">Start the quiz</button>
+    <p class="fine">Your answers are anonymous. No name or email is collected.</p>
+  </section>
+
+  <!-- Quiz -->
+  <section id="quiz" class="screen" hidden>
+    <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+    <p class="eyebrow" id="counter"></p>
+    <h2 id="question" tabindex="-1"></h2>
+    <div id="options" class="options"></div>
+    <button id="back" class="btn ghost">← Back</button>
+  </section>
+
+  <!-- Result -->
+  <section id="result" class="screen" hidden>
+    <p class="eyebrow">Your entrepreneurial archetype</p>
+    <h1 id="r-name" tabindex="-1"></h1>
+    <p class="tagline" id="r-tagline"></p>
+    <p class="lede" id="r-desc"></p>
+
+    <div class="card">
+      <h3>Your DNA mix</h3>
+      <div id="r-mix"></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Your natural strengths</h3>
+        <ul id="r-strengths"></ul>
+      </div>
+      <div class="card">
+        <h3>Where this could take you</h3>
+        <ul id="r-careers"></ul>
+      </div>
+    </div>
+
+    <div class="card accent">
+      <h3>Your Sauder connection</h3>
+      <p id="r-sauder"></p>
+    </div>
+
+    <div class="actions">
+      <button id="share" class="btn primary">Share my result</button>
+      <button id="retake" class="btn ghost">Retake the quiz</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="quiz-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
