@@ -1,14 +1,55 @@
 (function () {
   const $ = (id) => document.getElementById(id);
   const screens = ["intro", "quiz", "result"];
+  const METRES_PER_QUESTION = 400; // 10 questions = 4,000 m to the sea floor
   let current = 0;
   let answers = []; // index 0-3 per question
+  let shownDepth = 0;
+  let depthTimer = null;
 
   function show(name) {
     screens.forEach((s) => ($(s).hidden = s !== name));
     window.scrollTo(0, 0);
   }
 
+  // ----- Dive: background, depth gauge, bubbles -----
+  function zoneFor(m) {
+    if (m < 200) return "Sunlight zone";
+    if (m < 1000) return "Twilight zone";
+    return "Midnight zone";
+  }
+
+  function setDepth(step) {
+    document.body.style.setProperty("--p", step / QUESTIONS.length);
+    const target = step * METRES_PER_QUESTION;
+    $("zone").textContent = zoneFor(target);
+    cancelAnimationFrame(depthTimer);
+    const from = shownDepth;
+    const start = performance.now();
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    (function tick(now) {
+      const t = reduce ? 1 : Math.min(1, (now - start) / 900);
+      shownDepth = Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3)));
+      $("depth").textContent = shownDepth.toLocaleString("en-CA");
+      if (t < 1) depthTimer = requestAnimationFrame(tick);
+    })(start);
+  }
+
+  function makeBubbles() {
+    const box = $("bubbles");
+    for (let n = 0; n < 14; n++) {
+      const b = document.createElement("i");
+      const size = 6 + Math.random() * 18;
+      b.style.width = b.style.height = size + "px";
+      b.style.left = Math.random() * 100 + "%";
+      b.style.setProperty("--drift", Math.random() * 60 - 30 + "px");
+      b.style.animationDuration = 9 + Math.random() * 10 + "s";
+      b.style.animationDelay = -Math.random() * 19 + "s";
+      box.appendChild(b);
+    }
+  }
+
+  // ----- Quiz -----
   function renderQuestion() {
     const item = QUESTIONS[current];
     const counter = $("counter");
@@ -24,6 +65,7 @@
       if (n <= current) seg.className = "done";
       bar.appendChild(seg);
     });
+    setDepth(current);
     $("question").textContent = item.q;
     $("back").hidden = current === 0;
 
@@ -81,6 +123,7 @@
     const { totals, winner } = score();
     const a = ARCHETYPES[winner];
     document.body.dataset.type = winner;
+    setDepth(QUESTIONS.length);
     $("r-name").textContent = a.name;
     $("r-tagline").textContent = a.tagline;
     $("r-desc").textContent = a.desc;
@@ -139,6 +182,7 @@
     show("quiz");
   }
 
+  makeBubbles();
   $("start").addEventListener("click", restart);
   $("retake").addEventListener("click", restart);
   $("back").addEventListener("click", () => {
