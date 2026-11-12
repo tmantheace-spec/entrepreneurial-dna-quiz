@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0e74ac">
+<meta name="theme-color" content="#0f2748">
 <title>The Entrepreneurial DNA Quiz</title>
 <meta name="description" content="A 2–3 minute quiz that reveals what kind of entrepreneurial thinker you are.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Pixelify+Sans:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,73 +25,52 @@
 </form>
 
 <div class="water" aria-hidden="true"></div>
-<div class="bubbles" id="bubbles" aria-hidden="true"></div>
 
 <main id="app">
 
   <!-- Intro -->
   <section id="intro" class="screen">
-    <div class="sky" aria-hidden="true">
-      <svg viewBox="0 0 1200 40" preserveAspectRatio="none"><path d="M0 0h1200v14c-100 26-200 26-300 0s-200-26-300 0-200 26-300 0S100-12 0 14z"/></svg>
-    </div>
-    <p class="gauge">Surface · 0 m</p>
-    <h1 class="title">The<br>Entre&shy;preneurial<br>DNA Quiz</h1>
-    <div class="intro-row">
-      <p class="lede">Ten everyday situations. No right answers. Every answer takes you deeper, and at the bottom you find out what kind of entrepreneurial thinker you are.</p>
-      <div>
-        <button id="start" class="btn">Dive in <span aria-hidden="true">↓</span></button>
-        <p class="fine">10 questions. About 2 minutes. Anonymous.</p>
-      </div>
-    </div>
+    <p class="label">A two-minute dive</p>
+    <h1 class="title">Entrepreneurial DNA</h1>
+    <p class="lede">Ten everyday situations. No right answers. Find out what kind of entrepreneurial thinker you are.</p>
+    <button id="start" class="btn">Dive in</button>
+    <p class="fine">10 questions · anonymous</p>
   </section>
 
   <!-- Quiz -->
   <section id="quiz" class="screen" hidden>
     <div class="quiz-head">
-      <p id="counter" class="counter"></p>
-      <p class="depth"><span id="depth">0</span> m<small id="zone"></small></p>
+      <p id="counter" class="label"></p>
+      <p class="label dim">−<span id="depth">0</span> m · <span id="zone"></span></p>
     </div>
-    <div id="bar" class="segments" aria-hidden="true"></div>
+    <div class="progress" aria-hidden="true"><i id="bar"></i></div>
     <h2 id="question" tabindex="-1"></h2>
     <div id="options" class="options"></div>
-    <button id="back" class="link">↑ Previous question</button>
+    <button id="back" class="link">← Back</button>
   </section>
 
   <!-- Result -->
   <section id="result" class="screen" hidden>
-    <div class="hero">
-      <p class="gauge">4,000 m · The sea floor</p>
-      <p class="hero-label">Down here, you found your entrepreneurial DNA</p>
-      <h1 id="r-name" tabindex="-1"></h1>
-      <p class="hero-tag" id="r-tagline"></p>
-    </div>
-
+    <p class="label">Your archetype</p>
+    <h1 id="r-name" class="name" tabindex="-1"></h1>
+    <p class="tagline" id="r-tagline"></p>
     <p class="desc" id="r-desc"></p>
 
-    <div class="block">
-      <h3>Your DNA mix</h3>
-      <div id="r-mix"></div>
-    </div>
+    <h3>Your DNA mix</h3>
+    <div id="r-mix" class="mix"></div>
 
-    <div class="cols">
-      <div class="block">
-        <h3>Your natural strengths</h3>
-        <ol id="r-strengths"></ol>
-      </div>
-      <div class="block">
-        <h3>Where this could take you</h3>
-        <ol id="r-careers"></ol>
-      </div>
-    </div>
+    <h3>Natural strengths</h3>
+    <ul id="r-strengths"></ul>
 
-    <div class="sauder">
-      <h3>Your Sauder connection</h3>
-      <p id="r-sauder"></p>
-    </div>
+    <h3>Where this could take you</h3>
+    <ul id="r-careers"></ul>
+
+    <h3>Your Sauder connection</h3>
+    <p class="panel" id="r-sauder"></p>
 
     <div class="actions">
-      <button id="share" class="btn">Share my result</button>
-      <button id="retake" class="link">↑ Resurface and retake</button>
+      <button id="share" class="btn">Share result</button>
+      <button id="retake" class="link">Retake</button>
     </div>
   </section>
 

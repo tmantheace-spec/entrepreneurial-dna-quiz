@@ -12,7 +12,7 @@
     window.scrollTo(0, 0);
   }
 
-  // ----- Dive: background, depth gauge, bubbles -----
+  // ----- Dive: background and depth gauge -----
   function zoneFor(m) {
     if (m < 200) return "Sunlight zone";
     if (m < 1000) return "Twilight zone";
@@ -35,36 +35,13 @@
     })(start);
   }
 
-  function makeBubbles() {
-    const box = $("bubbles");
-    for (let n = 0; n < 14; n++) {
-      const b = document.createElement("i");
-      const size = 6 + Math.random() * 18;
-      b.style.width = b.style.height = size + "px";
-      b.style.left = Math.random() * 100 + "%";
-      b.style.setProperty("--drift", Math.random() * 60 - 30 + "px");
-      b.style.animationDuration = 9 + Math.random() * 10 + "s";
-      b.style.animationDelay = -Math.random() * 19 + "s";
-      box.appendChild(b);
-    }
-  }
-
   // ----- Quiz -----
   function renderQuestion() {
     const item = QUESTIONS[current];
-    const counter = $("counter");
-    counter.textContent = String(current + 1).padStart(2, "0");
-    const total = document.createElement("small");
-    total.textContent = " / " + QUESTIONS.length;
-    counter.appendChild(total);
-    counter.setAttribute("aria-label", "Question " + (current + 1) + " of " + QUESTIONS.length);
-    const bar = $("bar");
-    bar.innerHTML = "";
-    QUESTIONS.forEach((_, n) => {
-      const seg = document.createElement("i");
-      if (n <= current) seg.className = "done";
-      bar.appendChild(seg);
-    });
+    $("counter").textContent =
+      String(current + 1).padStart(2, "0") + " / " + QUESTIONS.length;
+    $("counter").setAttribute("aria-label", "Question " + (current + 1) + " of " + QUESTIONS.length);
+    $("bar").style.width = ((current + 1) / QUESTIONS.length) * 100 + "%";
     setDepth(current);
     $("question").textContent = item.q;
     $("back").hidden = current === 0;
@@ -182,7 +159,6 @@
     show("quiz");
   }
 
-  makeBubbles();
   $("start").addEventListener("click", restart);
   $("retake").addEventListener("click", restart);
   $("back").addEventListener("click", () => {
@@ -198,7 +174,7 @@
       } else {
         await navigator.clipboard.writeText(text + " " + url);
         btn.textContent = "Link copied!";
-        setTimeout(() => (btn.textContent = "Share my result"), 2000);
+        setTimeout(() => (btn.textContent = "Share result"), 2000);
       }
     } catch (e) { /* share cancelled */ }
   });
