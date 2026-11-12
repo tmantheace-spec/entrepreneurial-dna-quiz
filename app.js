@@ -11,8 +11,19 @@
 
   function renderQuestion() {
     const item = QUESTIONS[current];
-    $("counter").textContent = "Question " + (current + 1) + " of " + QUESTIONS.length;
-    $("bar").style.width = (current / QUESTIONS.length) * 100 + "%";
+    const counter = $("counter");
+    counter.textContent = String(current + 1).padStart(2, "0");
+    const total = document.createElement("small");
+    total.textContent = " / " + QUESTIONS.length;
+    counter.appendChild(total);
+    counter.setAttribute("aria-label", "Question " + (current + 1) + " of " + QUESTIONS.length);
+    const bar = $("bar");
+    bar.innerHTML = "";
+    QUESTIONS.forEach((_, n) => {
+      const seg = document.createElement("i");
+      if (n <= current) seg.className = "done";
+      bar.appendChild(seg);
+    });
     $("question").textContent = item.q;
     $("back").hidden = current === 0;
 

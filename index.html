@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Entrepreneurial DNA Quiz</title>
 <meta name="description" content="A 2–3 minute quiz that reveals what kind of entrepreneurial thinker you are.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,57 +23,67 @@
   <input name="score-visionary-leader">
 </form>
 
+<div class="stripes" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
 <main id="app">
 
   <!-- Intro -->
   <section id="intro" class="screen">
-    <p class="eyebrow">2–3 minutes · 10 questions</p>
-    <h1>The Entrepreneurial DNA Quiz</h1>
-    <p class="lede">Ten everyday situations. No right answers. Pick whatever sounds most like you and find out what kind of entrepreneurial thinker you are.</p>
-    <button id="start" class="btn primary">Start the quiz</button>
-    <p class="fine">Your answers are anonymous. No name or email is collected.</p>
+    <h1 class="title">The<br>Entre&shy;preneurial<br>DNA Quiz</h1>
+    <div class="intro-row">
+      <p class="lede">Ten everyday situations. No right answers. Pick whatever sounds most like you and find out what kind of entrepreneurial thinker you are.</p>
+      <div>
+        <button id="start" class="btn">Start <span aria-hidden="true">→</span></button>
+        <p class="fine">10 questions. About 2 minutes. Anonymous.</p>
+      </div>
+    </div>
   </section>
 
   <!-- Quiz -->
   <section id="quiz" class="screen" hidden>
-    <div class="progress" aria-hidden="true"><div id="bar"></div></div>
-    <p class="eyebrow" id="counter"></p>
+    <div class="quiz-head">
+      <p id="counter" class="counter"></p>
+      <div id="bar" class="segments" aria-hidden="true"></div>
+    </div>
     <h2 id="question" tabindex="-1"></h2>
     <div id="options" class="options"></div>
-    <button id="back" class="btn ghost">← Back</button>
+    <button id="back" class="link">← Previous question</button>
   </section>
 
   <!-- Result -->
   <section id="result" class="screen" hidden>
-    <p class="eyebrow">Your entrepreneurial archetype</p>
-    <h1 id="r-name" tabindex="-1"></h1>
-    <p class="tagline" id="r-tagline"></p>
-    <p class="lede" id="r-desc"></p>
+    <div class="hero">
+      <p class="hero-label">Your entrepreneurial archetype</p>
+      <h1 id="r-name" tabindex="-1"></h1>
+      <p class="hero-tag" id="r-tagline"></p>
+    </div>
 
-    <div class="card">
+    <p class="desc" id="r-desc"></p>
+
+    <div class="block">
       <h3>Your DNA mix</h3>
       <div id="r-mix"></div>
     </div>
 
-    <div class="grid">
-      <div class="card">
+    <div class="cols">
+      <div class="block">
         <h3>Your natural strengths</h3>
-        <ul id="r-strengths"></ul>
+        <ol id="r-strengths"></ol>
       </div>
-      <div class="card">
+      <div class="block">
         <h3>Where this could take you</h3>
-        <ul id="r-careers"></ul>
+        <ol id="r-careers"></ol>
       </div>
     </div>
 
-    <div class="card accent">
+    <div class="sauder">
       <h3>Your Sauder connection</h3>
       <p id="r-sauder"></p>
     </div>
 
     <div class="actions">
-      <button id="share" class="btn primary">Share my result</button>
-      <button id="retake" class="btn ghost">Retake the quiz</button>
+      <button id="share" class="btn">Share my result</button>
+      <button id="retake" class="link">Retake the quiz</button>
     </div>
   </section>
 
