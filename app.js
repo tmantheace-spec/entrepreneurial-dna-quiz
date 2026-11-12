@@ -2,15 +2,129 @@
   const $ = (id) => document.getElementById(id);
   const screens = ["intro", "quiz", "result"];
   const METRES_PER_QUESTION = 400; // 10 questions = 4,000 m to the sea floor
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let current = 0;
   let answers = []; // index 0-3 per question
   let shownDepth = 0;
   let depthTimer = null;
+  let busy = false; // true while a transition is playing
 
   function show(name) {
     screens.forEach((s) => ($(s).hidden = s !== name));
     window.scrollTo(0, 0);
   }
+
+  // ----- Animation helpers -----
+
+  // Slides `el` out, runs `update`, then slides the new content in.
+  // dir 1 = going deeper (content drifts up), -1 = going back up.
+  function swap(el, dir, update) {
+    if (reduce) { update(); busy = false; return; }
+    busy = true;
+    const out = dir > 0 ? "out-up" : "out-down";
+    el.classList.remove("in-up", "in-down");
+    el.classList.add(out);
+    setTimeout(() => {
+      update();
+      el.classList.remove(out);
+      el.classList.add(dir > 0 ? "in-up" : "in-down");
+      busy = false;
+    }, 220);
+  }
+
+  // Text resolves out of scrambled DNA bases (A, T, G, C), left to right.
+  function decode(el, text) {
+    el.setAttribute("aria-label", text);
+    clearInterval(el._decode);
+    if (reduce) { el.textContent = text; return; }
+    const start = performance.now();
+    const step = () => {
+      const done = Math.floor(((performance.now() - start) / 900) * text.length);
+      el.textContent = text.split("").map((ch, i) => {
+        if (i < done || ch === " ") return ch;
+        const base = "ATGC"[(Math.random() * 4) | 0];
+        return ch === ch.toLowerCase() ? base.toLowerCase() : base;
+      }).join("");
+      if (done >= text.length) { clearInterval(el._decode); el.textContent = text; }
+    };
+    step();
+    el._decode = setInterval(step, 50);
+  }
+
+  // Drifting specks and a few fish silhouettes. They rush past when you descend.
+  const sea = (function () {
+    const canvas = $("sea");
+    const ctx = canvas.getContext("2d");
+    const FISH = ["..##....", ".####..#", "########", ".####..#", "..##...."];
+    const specks = Array.from({ length: 44 }, () => ({
+      x: Math.random(), y: Math.random(),
+      size: Math.random() < 0.3 ? 3 : 2,
+      speed: 0.004 + Math.random() * 0.012,
+      alpha: 0.1 + Math.random() * 0.28
+    }));
+    const fish = Array.from({ length: 3 }, (_, n) => ({
+      x: Math.random(), y: 0.25 + n * 0.25 + Math.random() * 0.1,
+      dir: n % 2 ? 1 : -1,
+      speed: 0.012 + Math.random() * 0.014,
+      scale: 2 + n
+    }));
+    let w = 0, h = 0, rush = 0, last = 0;
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      w = innerWidth; h = innerHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (reduce) draw(0);
+    }
+
+    function draw(dt) {
+      ctx.clearRect(0, 0, w, h);
+      rush *= Math.pow(0.012, dt); // eases back to a slow drift
+      const tint = document.body.dataset.type
+        ? getComputedStyle(document.body).getPropertyValue("--accent") : "#89a3d6";
+
+      ctx.fillStyle = "#c9d8f5";
+      specks.forEach((s) => {
+        s.y -= (s.speed + rush) * dt;
+        if (s.y < -0.02) { s.y += 1.04; s.x = Math.random(); }
+        if (s.y > 1.02) { s.y -= 1.04; s.x = Math.random(); }
+        ctx.globalAlpha = s.alpha;
+        ctx.fillRect(Math.round(s.x * w), Math.round(s.y * h), s.size, s.size);
+      });
+
+      ctx.fillStyle = tint;
+      ctx.globalAlpha = 0.2;
+      fish.forEach((f) => {
+        f.x += f.dir * f.speed * dt;
+        f.y -= rush * 0.7 * dt;
+        if (f.x < -0.1 || f.x > 1.1) { f.dir *= -1; f.y = 0.15 + Math.random() * 0.75; }
+        if (f.y < -0.1) f.y += 1.2;
+        if (f.y > 1.1) f.y -= 1.2;
+        const px = Math.round(f.x * w), py = Math.round(f.y * h);
+        FISH.forEach((row, r) => {
+          for (let c = 0; c < row.length; c++) {
+            if (row[c] !== "#") continue;
+            const col = f.dir < 0 ? c : row.length - 1 - c; // face the way it swims
+            ctx.fillRect(px + col * f.scale, py + r * f.scale, f.scale, f.scale);
+          }
+        });
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    function frame(now) {
+      draw(Math.min(0.05, (now - last) / 1000));
+      last = now;
+      requestAnimationFrame(frame);
+    }
+
+    addEventListener("resize", resize);
+    resize();
+    if (!reduce) requestAnimationFrame((now) => { last = now; frame(now); });
+
+    return { rush: (dir) => { rush = dir * 1.5; } };
+  })();
 
   // ----- Dive: background and depth gauge -----
   function zoneFor(m) {
@@ -26,7 +140,6 @@
     cancelAnimationFrame(depthTimer);
     const from = shownDepth;
     const start = performance.now();
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     (function tick(now) {
       const t = reduce ? 1 : Math.min(1, (now - start) / 900);
       shownDepth = Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3)));
@@ -51,26 +164,35 @@
     item.a.forEach((text, i) => {
       const b = document.createElement("button");
       b.className = "option" + (answers[current] === i ? " selected" : "");
+      b.style.setProperty("--i", i);
       const letter = document.createElement("span");
       letter.className = "letter";
       letter.textContent = "ABCD"[i];
       const label = document.createElement("span");
       label.textContent = text;
       b.append(letter, label);
-      b.addEventListener("click", () => choose(i));
+      b.addEventListener("click", () => choose(i, b));
       box.appendChild(b);
     });
     $("question").focus({ preventScroll: true });
   }
 
-  function choose(i) {
+  function choose(i, button) {
+    if (busy) return;
+    busy = true;
     answers[current] = i;
-    if (current < QUESTIONS.length - 1) {
-      current++;
-      renderQuestion();
-    } else {
-      finish();
-    }
+    document.querySelectorAll(".option").forEach((o) => o.classList.remove("selected"));
+    button.classList.add("selected", "picked");
+    // Brief pause so the pick registers before sinking to the next question.
+    setTimeout(() => {
+      sea.rush(1);
+      if (current < QUESTIONS.length - 1) {
+        current++;
+        swap($("stage"), 1, renderQuestion);
+      } else {
+        swap($("app"), 1, finish);
+      }
+    }, reduce ? 0 : 180);
   }
 
   function score() {
@@ -101,7 +223,6 @@
     const a = ARCHETYPES[winner];
     document.body.dataset.type = winner;
     setDepth(QUESTIONS.length);
-    $("r-name").textContent = a.name;
     $("r-tagline").textContent = a.tagline;
     $("r-desc").textContent = a.desc;
     fillList("r-strengths", a.strengths);
@@ -110,7 +231,7 @@
 
     const mix = $("r-mix");
     mix.innerHTML = "";
-    ORDER.slice().sort((x, y) => totals[y] - totals[x]).forEach((k) => {
+    ORDER.slice().sort((x, y) => totals[y] - totals[x]).forEach((k, n) => {
       const pct = Math.round((totals[k] / QUESTIONS.length) * 100);
       const row = document.createElement("div");
       row.className = "mix-row";
@@ -128,10 +249,12 @@
       num.textContent = pct + "%";
       row.append(name, track, num);
       mix.appendChild(row);
-      requestAnimationFrame(() => requestAnimationFrame(() => (fill.style.width = pct + "%")));
+      // Bars fill one after another once the section has appeared.
+      setTimeout(() => (fill.style.width = pct + "%"), reduce ? 0 : 700 + n * 120);
     });
 
     show("result");
+    decode($("r-name"), a.name);
     $("r-name").focus({ preventScroll: true });
     submit(totals, a.name);
   }
@@ -151,21 +274,29 @@
     }).catch(() => {});
   }
 
-  function restart() {
-    current = 0;
-    answers = [];
-    delete document.body.dataset.type;
-    renderQuestion();
-    show("quiz");
+  function restart(dir) {
+    if (busy) return;
+    sea.rush(dir);
+    swap($("app"), dir, () => {
+      current = 0;
+      answers = [];
+      delete document.body.dataset.type;
+      renderQuestion();
+      show("quiz");
+    });
   }
 
-  $("start").addEventListener("click", restart);
-  $("retake").addEventListener("click", restart);
+  decode($("title"), "Entrepreneurial DNA");
+  $("start").addEventListener("click", () => restart(1));
+  $("retake").addEventListener("click", () => restart(-1)); // back up to the surface
   $("back").addEventListener("click", () => {
-    if (current > 0) { current--; renderQuestion(); }
+    if (busy || current === 0) return;
+    current--;
+    sea.rush(-1);
+    swap($("stage"), -1, renderQuestion);
   });
   $("share").addEventListener("click", async () => {
-    const text = "I got " + $("r-name").textContent + " on the Entrepreneurial DNA Quiz. What's yours?";
+    const text = "I got " + $("r-name").getAttribute("aria-label") + " on the Entrepreneurial DNA Quiz. What's yours?";
     const url = location.href.split("#")[0];
     const btn = $("share");
     try {

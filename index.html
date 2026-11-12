@@ -25,13 +25,14 @@
 </form>
 
 <div class="water" aria-hidden="true"></div>
+<canvas id="sea" aria-hidden="true"></canvas>
 
 <main id="app">
 
   <!-- Intro -->
   <section id="intro" class="screen">
     <p class="label">A two-minute dive</p>
-    <h1 class="title">Entrepreneurial DNA</h1>
+    <h1 id="title" class="title">Entrepreneurial DNA</h1>
     <p class="lede">Ten everyday situations. No right answers. Find out what kind of entrepreneurial thinker you are.</p>
     <button id="start" class="btn">Dive in</button>
     <p class="fine">10 questions · anonymous</p>
@@ -44,8 +45,10 @@
       <p class="label dim">−<span id="depth">0</span> m · <span id="zone"></span></p>
     </div>
     <div class="progress" aria-hidden="true"><i id="bar"></i></div>
-    <h2 id="question" tabindex="-1"></h2>
-    <div id="options" class="options"></div>
+    <div id="stage">
+      <h2 id="question" tabindex="-1"></h2>
+      <div id="options" class="options"></div>
+    </div>
     <button id="back" class="link">← Back</button>
   </section>
 
