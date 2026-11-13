@@ -68,7 +68,9 @@
       speed: 0.012 + Math.random() * 0.014,
       scale: 2 + n
     }));
-    let w = 0, h = 0, rush = 0, last = 0;
+    let w = 0, h = 0, rush = 0, last = 0, time = 0;
+    let surface = 0.72; // waterline on the start screen, as a fraction of screen height
+    let dived = false;
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
@@ -80,7 +82,25 @@
 
     function draw(dt) {
       ctx.clearRect(0, 0, w, h);
+      time += dt;
       rush *= Math.pow(0.012, dt); // eases back to a slow drift
+
+      // Waterline: sky above, darker water below. Leaves the top of the screen on the dive.
+      if (dived && surface > -0.1) surface -= (rush + 1.1) * dt;
+      const top = Math.max(0, surface) * h;
+      if (surface > -0.05) {
+        for (let x = 0; x < w; x += 4) {
+          const wave = Math.sin(x * 0.018 + time * 1.2) * 1.5 + Math.sin(x * 0.007 - time * 0.7) * 1.5;
+          const y = Math.round(surface * h) + Math.round(wave) * 2;
+          ctx.fillStyle = "rgba(3, 8, 20, .4)";
+          ctx.fillRect(x, y, 4, h - y);
+          ctx.fillStyle = "rgba(150, 185, 240, .5)";
+          ctx.fillRect(x, y, 4, 2);
+        }
+      } else {
+        ctx.fillStyle = "rgba(3, 8, 20, .4)";
+        ctx.fillRect(0, 0, w, h);
+      }
       const tint = document.body.dataset.type
         ? getComputedStyle(document.body).getPropertyValue("--accent") : "#89a3d6";
 
@@ -89,6 +109,7 @@
         s.y -= (s.speed + rush) * dt;
         if (s.y < -0.02) { s.y += 1.04; s.x = Math.random(); }
         if (s.y > 1.02) { s.y -= 1.04; s.x = Math.random(); }
+        if (s.y * h < top + 8) return; // nothing drifts above the waterline
         ctx.globalAlpha = s.alpha;
         ctx.fillRect(Math.round(s.x * w), Math.round(s.y * h), s.size, s.size);
       });
@@ -102,6 +123,7 @@
         if (f.y < -0.1) f.y += 1.2;
         if (f.y > 1.1) f.y -= 1.2;
         const px = Math.round(f.x * w), py = Math.round(f.y * h);
+        if (py < top + 8) return;
         FISH.forEach((row, r) => {
           for (let c = 0; c < row.length; c++) {
             if (row[c] !== "#") continue;
@@ -123,7 +145,10 @@
     resize();
     if (!reduce) requestAnimationFrame((now) => { last = now; frame(now); });
 
-    return { rush: (dir) => { rush = dir * 1.5; } };
+    return {
+      rush: (dir) => { rush = dir * 1.5; },
+      dive: () => { dived = true; if (reduce) { surface = -1; draw(0); } }
+    };
   })();
 
   // ----- Dive: background and depth gauge -----
@@ -208,13 +233,39 @@
     return { totals, winner };
   }
 
-  function fillList(id, items) {
-    const ul = $(id);
-    ul.innerHTML = "";
-    items.forEach((t) => {
-      const li = document.createElement("li");
-      li.textContent = t;
-      ul.appendChild(li);
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    return node;
+  }
+
+  // Fills a <dl> with [term, description] pairs.
+  function fillRows(id, pairs) {
+    const dl = $(id);
+    dl.innerHTML = "";
+    pairs.forEach(([term, text]) => {
+      const row = el("div", "row");
+      row.append(el("dt", "", term), el("dd", "", text));
+      dl.appendChild(row);
+    });
+  }
+
+  function fillCourses(courses) {
+    const box = $("r-courses");
+    box.innerHTML = "";
+    courses.forEach((c, n) => {
+      const card = el("article", "panel course");
+      const why = el("p", "why");
+      why.append(el("b", "", "Why it suits you: "), c.why);
+      card.append(
+        el("p", "label", String(n + 1).padStart(2, "0") + " · " + c.code),
+        el("h4", "", c.title),
+        el("p", "tag", c.tag),
+        el("p", "", c.desc),
+        why
+      );
+      box.appendChild(card);
     });
   }
 
@@ -223,11 +274,12 @@
     const a = ARCHETYPES[winner];
     document.body.dataset.type = winner;
     setDepth(QUESTIONS.length);
-    $("r-tagline").textContent = a.tagline;
-    $("r-desc").textContent = a.desc;
-    fillList("r-strengths", a.strengths);
-    fillList("r-careers", a.careers);
-    $("r-sauder").textContent = a.sauder;
+    $("r-quote").textContent = a.quote;
+    $("r-summary").textContent = a.summary;
+    $("r-strengths-intro").textContent = a.strengthsIntro;
+    fillRows("r-strengths", a.strengths);
+    fillRows("r-careers", a.careers);
+    fillCourses(a.courses);
 
     const mix = $("r-mix");
     mix.innerHTML = "";
@@ -238,7 +290,7 @@
       row.dataset.type = k;
       const name = document.createElement("span");
       name.className = "mix-name";
-      name.textContent = ARCHETYPES[k].name;
+      name.textContent = ARCHETYPES[k].short;
       const track = document.createElement("span");
       track.className = "mix-track";
       const fill = document.createElement("span");
@@ -256,7 +308,7 @@
     show("result");
     decode($("r-name"), a.name);
     $("r-name").focus({ preventScroll: true });
-    submit(totals, a.name);
+    submit(totals, a.short);
   }
 
   // Sends the response to Netlify Forms. Fails silently when not on Netlify.
@@ -277,6 +329,7 @@
   function restart(dir) {
     if (busy) return;
     sea.rush(dir);
+    sea.dive();
     swap($("app"), dir, () => {
       current = 0;
       answers = [];
@@ -295,6 +348,14 @@
     sea.rush(-1);
     swap($("stage"), -1, renderQuestion);
   });
+  // Keyboard: A-D or 1-4 picks an answer.
+  addEventListener("keydown", (e) => {
+    if ($("quiz").hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    const i = "abcd".indexOf(e.key.toLowerCase()) >= 0 ? "abcd".indexOf(e.key.toLowerCase()) : "1234".indexOf(e.key);
+    const option = document.querySelectorAll(".option")[i];
+    if (option) option.click();
+  });
+
   $("share").addEventListener("click", async () => {
     const text = "I got " + $("r-name").getAttribute("aria-label") + " on the Entrepreneurial DNA Quiz. What's yours?";
     const url = location.href.split("#")[0];

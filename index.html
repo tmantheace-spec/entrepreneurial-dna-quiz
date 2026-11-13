@@ -6,6 +6,10 @@
 <meta name="theme-color" content="#0f2748">
 <title>The Entrepreneurial DNA Quiz</title>
 <meta name="description" content="A 2–3 minute quiz that reveals what kind of entrepreneurial thinker you are.">
+<meta property="og:title" content="The Entrepreneurial DNA Quiz">
+<meta property="og:description" content="Ten questions, two minutes. What kind of entrepreneurial thinker are you?">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%230b1d3d'/%3E%3Cpath fill='%23f4c552' d='M2 1h1v1H2zM5 1h1v1H5zM3 2h2v1H3zM2 3h1v1H2zM5 3h1v1H5zM2 4h1v1H2zM5 4h1v1H5zM3 5h2v1H3zM2 6h1v1H2zM5 6h1v1H5z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Pixelify+Sans:wght@500;600&display=swap" rel="stylesheet">
@@ -26,6 +30,7 @@
 
 <div class="water" aria-hidden="true"></div>
 <canvas id="sea" aria-hidden="true"></canvas>
+<div class="scan" aria-hidden="true"></div>
 
 <main id="app">
 
@@ -49,27 +54,34 @@
       <h2 id="question" tabindex="-1"></h2>
       <div id="options" class="options"></div>
     </div>
-    <button id="back" class="link">← Back</button>
+    <div class="quiz-foot">
+      <button id="back" class="link">← Back</button>
+      <p class="label dim keys">Press A–D</p>
+    </div>
   </section>
 
   <!-- Result -->
   <section id="result" class="screen" hidden>
-    <p class="label">Your archetype</p>
+    <p class="label">Your entrepreneurial DNA</p>
     <h1 id="r-name" class="name" tabindex="-1"></h1>
-    <p class="tagline" id="r-tagline"></p>
-    <p class="desc" id="r-desc"></p>
+    <p class="quote" id="r-quote"></p>
+    <p class="desc" id="r-summary"></p>
 
     <h3>Your DNA mix</h3>
     <div id="r-mix" class="mix"></div>
 
     <h3>Natural strengths</h3>
-    <ul id="r-strengths"></ul>
+    <div>
+      <p class="body" id="r-strengths-intro"></p>
+      <p class="sub">Your potential strengths include:</p>
+      <dl id="r-strengths" class="rows"></dl>
+    </div>
 
-    <h3>Where this could take you</h3>
-    <ul id="r-careers"></ul>
+    <h3>Potential career directions</h3>
+    <dl id="r-careers" class="rows"></dl>
 
-    <h3>Your Sauder connection</h3>
-    <p class="panel" id="r-sauder"></p>
+    <h3>UBC Sauder courses to explore</h3>
+    <div id="r-courses" class="courses"></div>
 
     <div class="actions">
       <button id="share" class="btn">Share result</button>

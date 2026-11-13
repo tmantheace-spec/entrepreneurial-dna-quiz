@@ -23,7 +23,7 @@ Responses are anonymous. The free Netlify plan includes 100 form submissions a m
 Everything the quiz says lives in `quiz-data.js`:
 
 - `QUESTIONS` holds the questions. Options are always in the order A, B, C, D.
-- `ARCHETYPES` holds each result's description, strengths, career directions and Sauder connection.
+- `ARCHETYPES` holds each result's quote, summary, strengths, career directions and UBC Sauder courses, copied from the group's Google Doc.
 
 ## Scoring
 
